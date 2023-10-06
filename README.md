@@ -1,0 +1,2 @@
+# SPACE-APPS-CHALLENGE-2023
+Develop the Oracle of DSCOVR
