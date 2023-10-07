@@ -75,12 +75,14 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size)
 class DSTModel(nn.Module):
     def __init__(self):
         super().__init__()
-        self.lstm = nn.LSTM(input_size=3, hidden_size=8, num_layers=1, batch_first=True)
+        self.lstm = nn.LSTM(input_size=3, hidden_size=8, num_layers=2, batch_first=True)
+        self.dropout = nn.Dropout(0.2)
         self.linear = nn.Linear(8, 1)
     def forward(self, x):
         x, _ = self.lstm(x)
+        x = x[:, -1, :]
         # produce output
-        x = self.linear(x[:, -1, :])
+        x = self.linear(self.dropout(x))
         return x
 
 model = DSTModel()
@@ -103,14 +105,16 @@ for epoch in range(n_epochs):
     for batch_idx, (X_batch, y_batch) in enumerate(train_loader):
         X_batch, y_batch = X_batch.to(device), y_batch.to(device)
         y_pred = model(X_batch)
-        loss = criterion(y_pred, y_batch)
+        loss = criterion(y_pred, torch.unsqueeze(y_batch, 1))
         tot_loss += loss.item()
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        progress_ratio = (batch_idx + 1) / total_train_batches
-        print(f"Batch {batch_idx+1}/{total_train_batches} [{100 * progress_ratio:.2f}%] - Loss: {loss.item():.4f}")
+        
+        if batch_idx % 100 == 0:
+            progress_ratio = (batch_idx + 1) / total_train_batches
+            print(f"Batch {batch_idx+1}/{total_train_batches} [{100 * progress_ratio:.2f}%] - Train Loss: {loss.item():.4f}")
     train_losses.append(tot_loss/total_train_batches)
     # Validation
     model.eval()
@@ -119,10 +123,12 @@ for epoch in range(n_epochs):
         for batch_idx, (X_batch, y_batch) in enumerate(test_loader):
             X_batch, y_batch = X_batch.to(device), y_batch.to(device)
             y_pred = model(X_batch)
-            loss += criterion(y_pred, y_batch).item()
-
-            progress_ratio = (batch_idx + 1) / total_test_batches
-            print(f"Batch {batch_idx+1}/{total_test_batches} [{100 * progress_ratio:.2f}%] - Loss: {loss:.4f}")
+            loss += criterion(y_pred, torch.unsqueeze(y_batch, 1)).item()
+            
+            
+            if batch_idx % 100 == 0:
+                progress_ratio = (batch_idx + 1) / total_test_batches
+                print(f"Batch {batch_idx+1}/{total_test_batches} [{100 * progress_ratio:.2f}%] - Test Loss: {loss:.4f}")
     test_losses.append(loss/total_test_batches)
 
     if loss < best_loss:
