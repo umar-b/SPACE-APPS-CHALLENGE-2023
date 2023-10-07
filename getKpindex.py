@@ -70,8 +70,8 @@ def getKpindex(starttime, endtime, index, status='all'):
     
         try:
             data = json.loads(text)
-            result_t = tuple(data["datetime"])
-            result_index = tuple(data[index])
+            result_t = data["datetime"]
+            result_index = data[index]
             if index not in ['Hp30', 'Hp60', 'ap30', 'ap60', 'Fobs', 'Fadj']:
                 result_s = tuple(data["status"])
         except:

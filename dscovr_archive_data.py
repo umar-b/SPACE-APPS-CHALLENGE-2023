@@ -8,7 +8,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 
-#Download the archive
+# #Download the archive
 urls = ['https://www.ngdc.noaa.gov/dscovr/data/2019/01/oe_fc1_dscovr_s20190101000000_e20190101235959_p20190102025445_pub.nc.gz', 
 'https://www.ngdc.noaa.gov/dscovr/data/2019/01/oe_fc1_dscovr_s20190102000000_e20190102235959_p20190103024627_pub.nc.gz', 
 'https://www.ngdc.noaa.gov/dscovr/data/2019/01/oe_fc1_dscovr_s20190103000000_e20190103235959_p20190104025909_pub.nc.gz', 
@@ -1102,21 +1102,21 @@ urls = ['https://www.ngdc.noaa.gov/dscovr/data/2019/01/oe_fc1_dscovr_s2019010100
 'https://www.ngdc.noaa.gov/dscovr/data/2021/12/oe_fc1_dscovr_s20211228000000_e20211228235959_p20211229021452_pub.nc.gz', 
 'https://www.ngdc.noaa.gov/dscovr/data/2021/12/oe_fc1_dscovr_s20211229000000_e20211229235959_p20211230021434_pub.nc.gz', 
 'https://www.ngdc.noaa.gov/dscovr/data/2021/12/oe_fc1_dscovr_s20211230000000_e20211230235959_p20211231021430_pub.nc.gz']
-download_folder = '/Data/nc.gz/'
-output_folder = '/Data/nc/'
+download_folder = './Data/nc.gz/'
+output_folder = './Data/nc/'
 
-for url in urls:
-    file_name = url.split('/')[-1]
-    wget.download(url, download_folder)
+# for url in urls:
+#     file_name = url.split('/')[-1]
+#     wget.download(url, download_folder)
     
-    #Decoompress the archive data
-    with gzip.open(os.path.join(download_folder, file_name), 'rb') as gz_file:
-        nc_data = gz_file.read()
-        with open(os.path.join(output_folder, file_name[:-3]), 'wb') as nc_file:
-            nc_file.write(nc_data)
+#     #Decoompress the archive data
+#     with gzip.open(os.path.join(download_folder, file_name), 'rb') as gz_file:
+#         nc_data = gz_file.read()
+#         with open(os.path.join(output_folder, file_name[:-3]), 'wb') as nc_file:
+#             nc_file.write(nc_data)
 
 # Specify the output CSV file name
-csv_file_name = './Data/dscovr_archive.csv'
+csv_file_name = './Data/dscovr_raw.csv'
 # Open the CSV file in write mode
 with open(csv_file_name, 'w', newline='') as csv_file:
     csv_writer = csv.writer(csv_file)
@@ -1148,7 +1148,7 @@ with open(csv_file_name, 'w', newline='') as csv_file:
             if var_name == 'time':
                 # Convert each timestamp to a datetime object
                 time_data = variable[:]
-                time_data = [datetime.fromtimestamp(ts/1000) for ts in time_data]
+                # time_data = [datetime.fromtimestamp(ts/1000) for ts in time_data]
                 variable_data[var_name] = time_data
             else:
                 variable_data[var_name] = variable[:]
@@ -1162,10 +1162,13 @@ with open(csv_file_name, 'w', newline='') as csv_file:
         dataset.close()
 
 #Filter the csv file for nan values
-df = pd.read_csv('/Data/dscovr_archive.csv', sep=',')
+df = pd.read_csv('./Data/dscovr_archive.csv', sep=',')
 for (columnName, columnData) in df.iteritems():
-    df = df[df[columnName] != '--']
-    df = df[df[columnName] != -9.9999000e+04]
-df.to_csv('/Data/dscovr_archivce_clean.csv')
+    # df = df[df[columnName] != '--']
+    # df = df[df[columnName] != -9.9999000e+04]
+    df.loc[df[columnName] == '--', [columnName]] = -np.inf
+    df.loc[df[columnName] == -9.9999000e+04, [columnName]] = -np.inf
+
+df.to_csv('./Data/dscovr_archive_clean.csv')
 df_np = df.to_numpy()
-np.save('/Data/dscovr_archive.npy', df_np)
+np.save('./Data/dscovr_archive.npy', df_np)
