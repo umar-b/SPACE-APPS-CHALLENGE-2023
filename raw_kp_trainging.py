@@ -29,7 +29,7 @@ df_output['Datetime'] = pd.to_datetime(df_output['Datetime'])
 merged_df = pd.merge_asof(df_input, df_output, on='Datetime', direction='backward')
 
 
-n_epochs = 20
+n_epochs = 10000
 batch_size = 100
 sequence_length = 180 #180 minutes = 3 hours
 
