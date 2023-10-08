@@ -50,9 +50,9 @@ for i in range(len(data) - sequence_length):
 X_input = np.array(X_input)
 y_output = np.array(y_output)
 
-# #TODO Comment out later
-# X_input = X_input[:50000]
-# y_output = y_output[:50000]
+# # #TODO Comment out later
+# X_input = X_input[:1500000]
+# y_output = y_output[:1500000]
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X_input, y_output, test_size=0.2, random_state=42)
 
